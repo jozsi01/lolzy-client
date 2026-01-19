@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"time"
 
@@ -12,12 +13,17 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-var connectionString string = "mongodb://localhost:27017"
+var hostname string = os.Getenv("MONGODB_HOST")
+
 var coll *mongo.Collection
 
 func ConnectToDatabase() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	if hostname == "" {
+		hostname = "localhost"
+	}
+	var connectionString string = fmt.Sprintf("mongodb://%s:27017", hostname)
 	db, err := mongo.Connect(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		return err

@@ -53,7 +53,7 @@ func Commands() *cli.Command {
 						return fmt.Errorf("Champ name not specified")
 					}
 					serverURL := url.URL{
-						Host:   "localhost:8080",
+						Host:   "lolzy.bozsik-services.me",
 						Scheme: "http",
 						Path:   fmt.Sprintf("/api/%s/meta", c.Args().First()),
 					}
@@ -109,7 +109,7 @@ func Commands() *cli.Command {
 						return fmt.Errorf("Champoin name not specified ")
 					}
 					serverURL := url.URL{
-						Host:   "localhost:8080",
+						Host:   "lolzy.bozsik-services.me",
 						Scheme: "http",
 						Path:   fmt.Sprintf("/api/%s/counter", c.Args().First()),
 					}
