@@ -27,6 +27,8 @@ type ChampCounter struct {
 	LoseRate         float64
 }
 
+var lolzyServerHost string = "lolzy.bozsik-services.me"
+
 func Commands() *cli.Command {
 	return &cli.Command{
 		Commands: []*cli.Command{
@@ -46,6 +48,12 @@ func Commands() *cli.Command {
 						Value:   false,
 						Usage:   "If true, champs will be included in the query with less than 0.5 percent pick rate",
 					},
+					&cli.StringFlag{
+						Name:    "rank",
+						Aliases: []string{"r"},
+						Value:   "overall",
+						Usage:   "Filters the results to include only matches from the specified rank. ",
+					},
 				},
 				UseShortOptionHandling: true,
 				Action: func(ctx context.Context, c *cli.Command) error {
@@ -53,7 +61,7 @@ func Commands() *cli.Command {
 						return fmt.Errorf("Champ name not specified")
 					}
 					serverURL := url.URL{
-						Host:   "lolzy.bozsik-services.me",
+						Host:   lolzyServerHost,
 						Scheme: "http",
 						Path:   fmt.Sprintf("/api/%s/meta", c.Args().First()),
 					}
@@ -66,7 +74,9 @@ func Commands() *cli.Command {
 					}
 					q.Add("top", c.String("top"))
 					q.Add("all", boolStr)
+					q.Add("rank", c.String("rank"))
 					serverURL.RawQuery = q.Encode()
+					fmt.Println("serverurl: ", serverURL.String())
 					req, err := http.NewRequest("GET", serverURL.String(), nil)
 					if err != nil {
 						return nil
@@ -102,6 +112,12 @@ func Commands() *cli.Command {
 						Value:   true,
 						Usage:   "If true, champs will be included in the query with less than 10 match data",
 					},
+					&cli.StringFlag{
+						Name:    "rank",
+						Aliases: []string{"rk"},
+						Value:   "overall",
+						Usage:   "Filters the results to include only matches from the specified rank. ",
+					},
 				},
 				UseShortOptionHandling: true,
 				Action: func(ctx context.Context, c *cli.Command) error {
@@ -109,7 +125,7 @@ func Commands() *cli.Command {
 						return fmt.Errorf("Champoin name not specified ")
 					}
 					serverURL := url.URL{
-						Host:   "lolzy.bozsik-services.me",
+						Host:   lolzyServerHost,
 						Scheme: "http",
 						Path:   fmt.Sprintf("/api/%s/counter", c.Args().First()),
 					}
@@ -121,6 +137,7 @@ func Commands() *cli.Command {
 						boolStr = "false"
 					}
 					q.Add("role", c.String("role"))
+					q.Add("rank", c.String("rank"))
 					q.Add("all", boolStr)
 					serverURL.RawQuery = q.Encode()
 					req, err := http.NewRequest("GET", serverURL.String(), nil)

@@ -4,15 +4,15 @@ import (
 	"fmt"
 )
 
-func UpdateChampStatData(rm *RoleMap) {
-	rolemap, err := GetChampStatData()
+func UpdateChampStatData(rm map[string]RoleMap) {
+	rolemap, err := GetAllRankStatData()
 	if err != nil {
 		fmt.Println("Updater error: ", err)
 	}
 
-	if rolemap.LastUpdated.After(rm.LastUpdated) {
-		fmt.Printf("Updating rolemap. Current version update: %v, fetched version update: %v\n", rm.LastUpdated, rolemap.LastUpdated)
-		rm = &rolemap
+	if rolemap["bronze"].LastUpdated.After(rm["bronze"].LastUpdated) {
+		fmt.Printf("Updating rolemap. Current version update: %v, fetched version update: %v\n", rm["bronze"].LastUpdated, rolemap["bronze"].LastUpdated)
+		rm = rolemap
 	}
 
 }

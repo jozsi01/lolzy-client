@@ -35,7 +35,13 @@ func handleMetaQueries(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	resultChamps := GetChampStatData(role, top, allChamps)
+	rank := r.URL.Query().Get("rank")
+	if rank == "" {
+		rank = "overall"
+	}
+	rank = strings.ToLower(rank)
+
+	resultChamps := GetChampStatData(role, top, allChamps, rank)
 
 	w.Header().Add("Content-Type", "application/json")
 
@@ -59,17 +65,22 @@ func handleCounterQueries(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	res := findChampCounters(champ, role, all)
+	rank := r.URL.Query().Get("rank")
+	if rank == "" {
+		rank = "overall"
+	}
+	rank = strings.ToLower(rank)
+	res := findChampCounters(champ, role, rank, all)
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 	return
 
 }
 
-func findChampCounters(champion, queriedRole string, all bool) map[string][]data.ChampCounter {
+func findChampCounters(champion, queriedRole, rank string, all bool) map[string][]data.ChampCounter {
+	fmt.Printf("egesz: %+v\n", champdata[rank])
 	result := make(map[string][]data.ChampCounter)
-	for role, champs := range champdata.Role {
+	for role, champs := range champdata[rank].Role {
 		for _, champ := range champs {
 			if strings.ToUpper(champ.Name) == strings.ToUpper(champion) {
 				for _, counter := range champ.Counters {
@@ -93,8 +104,8 @@ func findChampCounters(champion, queriedRole string, all bool) map[string][]data
 	return result
 }
 
-func GetChampStatData(role string, top int, allChamps bool) []data.Champ {
-	resultChamps := champdata.Role[role]
+func GetChampStatData(role string, top int, allChamps bool, rank string) []data.Champ {
+	resultChamps := champdata[rank].Role[role]
 	if !allChamps {
 		resultChamps = slices.Collect(func(yield func(data.Champ) bool) {
 			for _, ch := range resultChamps {
@@ -112,7 +123,7 @@ func GetChampStatData(role string, top int, allChamps bool) []data.Champ {
 	return resultChamps[:top]
 }
 
-var champdata data.RoleMap
+var champdata map[string]data.RoleMap
 
 func handleUpdater(ticker *time.Ticker, done chan bool) {
 
@@ -123,7 +134,7 @@ func handleUpdater(ticker *time.Ticker, done chan bool) {
 				fmt.Println("Megáll a gorutin")
 				return
 			case <-ticker.C:
-				data.UpdateChampStatData(&champdata)
+				data.UpdateChampStatData(champdata)
 			}
 
 		}
@@ -145,7 +156,7 @@ func main() {
 		fmt.Println("Couldnt parse updater frequency. Setting to 12h")
 		updaterFreq = 12 * time.Hour
 	}
-	champdata, err = data.GetChampStatData()
+	champdata, err = data.GetAllRankStatData()
 	if err != nil {
 		panic(err)
 	}

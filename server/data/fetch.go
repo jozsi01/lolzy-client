@@ -10,7 +10,6 @@ import (
 )
 
 var championDataUrl string = "https://static.bigbrain.gg/assets/lol/riot_static/16.1.1/data/en_US/champion.json"
-var campStatDataURL string = "https://stats2.u.gg/lol/1.5/champion_ranking/world/16_1/ranked_solo_5x5/emerald_plus/1.5.0.json"
 
 func GetChampionData() ChampDataResp {
 	resp, err := http.Get(championDataUrl)
@@ -27,8 +26,25 @@ func GetChampionData() ChampDataResp {
 	return respData
 }
 
-func GetChampStatData() (RoleMap, error) {
+func GetAllRankStatData() (map[string]RoleMap, error) {
 	champMetaData := GetChampionData()
+	res := make(map[string]RoleMap)
+	ranks := []string{"iron", "bronze", "silver", "gold", "platinum", "emerald", "diamond", "master", "grandmaster", "challenger", "overall"}
+	for _, rank := range ranks {
+		rolemap, err := GetChampStatData(rank, champMetaData)
+		if err != nil {
+			fmt.Printf("Error for createeing champ stat data with rank: %s\n", rank)
+			return nil, err
+		}
+		res[rank] = rolemap
+	}
+	return res, nil
+
+}
+
+func GetChampStatData(rank string, champMetaData ChampDataResp) (RoleMap, error) {
+
+	campStatDataURL := fmt.Sprintf("https://stats2.u.gg/lol/1.5/champion_ranking/world/16_1/ranked_solo_5x5/%s/1.5.0.json", rank)
 	resp, err := http.Get(campStatDataURL)
 	if err != nil {
 		fmt.Println("Error with the champion meta data request: ", err)
