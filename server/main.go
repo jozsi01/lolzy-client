@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"server/data"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func handleMetaQueries(w http.ResponseWriter, r *http.Request) {
@@ -112,8 +114,37 @@ func GetChampStatData(role string, top int, allChamps bool) []data.Champ {
 
 var champdata data.RoleMap
 
+func handleUpdater(ticker *time.Ticker, done chan bool) {
+
+	go func() {
+		for {
+			select {
+			case <-done:
+				fmt.Println("Megáll a gorutin")
+				return
+			case <-ticker.C:
+				data.UpdateChampStatData(&champdata)
+			}
+
+		}
+	}()
+
+}
+
+func getEnv(envName, def string) string {
+	res := os.Getenv(envName)
+	if res == "" {
+		return def
+	}
+	return res
+}
+
 func main() {
-	var err error
+	updaterFreq, err := time.ParseDuration(getEnv("UPDATER_FREQ", "12h"))
+	if err != nil {
+		fmt.Println("Couldnt parse updater frequency. Setting to 12h")
+		updaterFreq = 12 * time.Hour
+	}
 	champdata, err = data.GetChampStatData()
 	if err != nil {
 		panic(err)
@@ -121,6 +152,9 @@ func main() {
 
 	http.HandleFunc("GET /api/{role}/meta/", handleMetaQueries)
 	http.HandleFunc("GET /api/{champ}/counter/", handleCounterQueries)
+	ticker := time.NewTicker(updaterFreq)
+	done := make(chan bool)
+	go handleUpdater(ticker, done)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
