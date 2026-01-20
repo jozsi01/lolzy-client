@@ -27,25 +27,34 @@ func GetChampionData() ChampDataResp {
 	return respData
 }
 
-func GetChampStatData(champMetaData ChampDataResp) (map[string][]Champ, time.Time, error) {
+func GetChampStatData() (RoleMap, error) {
+	champMetaData := GetChampionData()
 	resp, err := http.Get(campStatDataURL)
 	if err != nil {
 		fmt.Println("Error with the champion meta data request: ", err)
-		return nil, time.Time{}, err
+		return RoleMap{}, err
 	}
 	defer resp.Body.Close()
 	bytedata, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
-		return nil, time.Time{}, err
+		return RoleMap{}, err
 	}
 	var raw []json.RawMessage
 	err = json.Unmarshal(bytedata, &raw)
 	if err != nil {
 		fmt.Println(err)
-		return nil, time.Time{}, err
+		return RoleMap{}, err
 	}
-	return convertChampStatDataIntoRoleChampMap(raw, champMetaData)
+	roleMap, lastUpdated, err := convertChampStatDataIntoRoleChampMap(raw, champMetaData)
+	if err != nil {
+		fmt.Println(err)
+		return RoleMap{}, err
+	}
+	return RoleMap{
+		Role:        roleMap,
+		LastUpdated: lastUpdated,
+	}, nil
 }
 
 func getChampNameFromId(id int, champMetaData ChampDataResp) string {

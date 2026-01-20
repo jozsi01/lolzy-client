@@ -113,11 +113,8 @@ func GetChampStatData(role string, top int, allChamps bool) []data.Champ {
 var champdata data.RoleMap
 
 func main() {
-	if err := data.ConnectToDatabase(); err != nil {
-		panic(err)
-	}
 	var err error
-	champdata, err = data.GetChampStat()
+	champdata, err = data.GetChampStatData()
 	if err != nil {
 		panic(err)
 	}
