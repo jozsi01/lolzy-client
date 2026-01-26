@@ -44,6 +44,8 @@ lolzy meta top -t 5 -rk silver
 
 This command displays the **top 5 champions for top lane** based on **silver-ranked** matches.
 
+[!Outout of the "lolzy counter darius -rk gold command"]("lolzy-meta.png")
+
 ---
 
 ## `lolzy counter <champ>`
@@ -55,19 +57,19 @@ This command shows which champions perform well **against a specific champion**.
 * `--rank <rank>`, `-rk <rank>`
   Uses only matches from the specified rank.
 
-* `--top <number>`, `-t <number>`
-  Limits the output to the top X counter champions.
-
 * `--all`, `-a`
   Includes champions with low pick rate or small sample size.
 
 ### Example
 
 ```bash
-lolzy counter darius -t 5 -rk gold
+lolzy counter darius -rk gold
 ```
 
 This command shows the **top 5 counters against Darius** based on **gold-ranked** matches.
+
+
+[!Outout of the "lolzy counter darius -rk gold command"]("lolzy-counter.png")
 
 ---
 

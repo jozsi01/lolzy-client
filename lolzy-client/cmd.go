@@ -50,7 +50,7 @@ func Commands() *cli.Command {
 					},
 					&cli.StringFlag{
 						Name:    "rank",
-						Aliases: []string{"r"},
+						Aliases: []string{"rk"},
 						Value:   "overall",
 						Usage:   "Filters the results to include only matches from the specified rank. ",
 					},
@@ -76,7 +76,6 @@ func Commands() *cli.Command {
 					q.Add("all", boolStr)
 					q.Add("rank", c.String("rank"))
 					serverURL.RawQuery = q.Encode()
-					fmt.Println("serverurl: ", serverURL.String())
 					req, err := http.NewRequest("GET", serverURL.String(), nil)
 					if err != nil {
 						return nil

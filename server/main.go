@@ -118,7 +118,7 @@ func GetChampStatData(role string, top int, allChamps bool, rank string) []data.
 		})
 	}
 	if top <= 0 {
-		top = len(resultChamps)
+		top = 5
 	}
 	return resultChamps[:top]
 }
