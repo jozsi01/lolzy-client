@@ -44,7 +44,7 @@ lolzy meta top -t 5 -rk silver
 
 This command displays the **top 5 champions for top lane** based on **silver-ranked** matches.
 
-[!Output of the lolzy counter darius -rk gold command](./lolzy-meta.png)
+[!Output of the lolzy counter darius -rk gold command](lolzy-meta.png)
 
 ---
 
@@ -69,7 +69,7 @@ lolzy counter darius -rk gold
 This command shows the **top 5 counters against Darius** based on **gold-ranked** matches.
 
 
-[!Outout of the lolzy counter darius -rk gold command](./lolzy-counter.png)
+[!Outout of the lolzy counter darius -rk gold command](lolzy-counter.png)
 
 ---
 
