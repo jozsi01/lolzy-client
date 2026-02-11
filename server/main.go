@@ -78,7 +78,6 @@ func handleCounterQueries(w http.ResponseWriter, r *http.Request) {
 }
 
 func findChampCounters(champion, queriedRole, rank string, all bool) map[string][]data.ChampCounter {
-	fmt.Printf("egesz: %+v\n", champdata[rank])
 	result := make(map[string][]data.ChampCounter)
 	for role, champs := range champdata[rank].Role {
 		for _, champ := range champs {
@@ -127,18 +126,16 @@ var champdata map[string]data.RoleMap
 
 func handleUpdater(ticker *time.Ticker, done chan bool) {
 
-	go func() {
-		for {
-			select {
-			case <-done:
-				fmt.Println("Megáll a gorutin")
-				return
-			case <-ticker.C:
-				data.UpdateChampStatData(champdata)
-			}
-
+	for {
+		select {
+		case <-done:
+			fmt.Println("Gorutin stops")
+			return
+		case <-ticker.C:
+			data.UpdateChampStatData(champdata)
 		}
-	}()
+
+	}
 
 }
 
@@ -151,7 +148,7 @@ func getEnv(envName, def string) string {
 }
 
 func main() {
-	updaterFreq, err := time.ParseDuration(getEnv("UPDATER_FREQ", "12h"))
+	updaterFreq, err := time.ParseDuration(getEnv("UPDATER_FREQ", "5s"))
 	if err != nil {
 		fmt.Println("Couldnt parse updater frequency. Setting to 12h")
 		updaterFreq = 12 * time.Hour
@@ -163,6 +160,7 @@ func main() {
 
 	http.HandleFunc("GET /api/{role}/meta/", handleMetaQueries)
 	http.HandleFunc("GET /api/{champ}/counter/", handleCounterQueries)
+	fmt.Println(updaterFreq)
 	ticker := time.NewTicker(updaterFreq)
 	done := make(chan bool)
 	go handleUpdater(ticker, done)

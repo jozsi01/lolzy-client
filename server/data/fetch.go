@@ -41,10 +41,27 @@ func GetAllRankStatData() (map[string]RoleMap, error) {
 	return res, nil
 
 }
+func GetCurrentPatchNumber() (string, error) {
+	patchDataUrl := "https://static.bigbrain.gg/assets/lol/riot_patch_update/prod/ugg/patches.json"
+	resp, err := http.Get(patchDataUrl)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	patches := make([]string, 1)
+	err = json.NewDecoder(resp.Body).Decode(&patches)
+	if err != nil {
+		return "", err
+	}
+	return patches[0], nil
+}
 
 func GetChampStatData(rank string, champMetaData ChampDataResp) (RoleMap, error) {
-
-	campStatDataURL := fmt.Sprintf("https://stats2.u.gg/lol/1.5/champion_ranking/world/16_1/ranked_solo_5x5/%s/1.5.0.json", rank)
+	patch, err := GetCurrentPatchNumber()
+	if err != nil {
+		return RoleMap{}, err
+	}
+	campStatDataURL := fmt.Sprintf("https://stats2.u.gg/lol/1.5/champion_ranking/world/%s/ranked_solo_5x5/%s/1.5.0.json", patch, rank)
 	resp, err := http.Get(campStatDataURL)
 	if err != nil {
 		fmt.Println("Error with the champion meta data request: ", err)
@@ -96,8 +113,6 @@ func convertChampStatDataIntoRoleChampMap(raw []json.RawMessage, champMetaData C
 		fmt.Println("Baj volta a totalMatches parsnál: ", err)
 		return nil, time.Time{}, err
 	}
-	fmt.Println("Time: ", lastUpdated)
-	fmt.Printf("all match: %f\n", totalMatches)
 	var rawstruct map[string][][]interface{}
 	res := make(map[string][]Champ)
 	if err := json.Unmarshal(top, &rawstruct); err != nil {
@@ -105,7 +120,7 @@ func convertChampStatDataIntoRoleChampMap(raw []json.RawMessage, champMetaData C
 		return nil, time.Time{}, err
 	}
 	for role, champs := range rawstruct {
-		fmt.Printf("Role: %s\n", role)
+
 		for _, champDatas := range champs {
 			var champ Champ
 			champID := champDatas[0].(string)
