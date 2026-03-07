@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -32,6 +33,30 @@ var lolzyServerHost string = "lolzy.bozsik-services.me"
 func Commands() *cli.Command {
 	return &cli.Command{
 		Commands: []*cli.Command{
+			{
+				Name: "update",
+				Action: func(ctx context.Context, c *cli.Command) error {
+					serverURL := url.URL{
+						Host:   lolzyServerHost,
+						Scheme: "http",
+						Path:   "/api/update",
+					}
+					resp, err := http.Get(serverURL.String())
+					if err != nil {
+						fmt.Println("Coudnt update the data: ", err)
+						return nil
+					}
+					defer resp.Body.Close()
+
+					result, err := io.ReadAll(resp.Body)
+					if err != nil {
+						fmt.Println("Couldnt read the response: ", err)
+						return err
+					}
+					fmt.Print(string(result))
+					return nil
+				},
+			},
 			{
 				Name:  "meta",
 				Usage: "meta <role_name> <options>",

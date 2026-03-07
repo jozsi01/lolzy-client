@@ -146,6 +146,11 @@ func getEnv(envName, def string) string {
 	}
 	return res
 }
+func handleManualUpdate(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Manually updating champdata")
+	data.UpdateChampStatData(champdata)
+	w.Write([]byte("Sucessfully updated"))
+}
 
 func main() {
 	updaterFreq, err := time.ParseDuration(getEnv("UPDATER_FREQ", "5s"))
@@ -159,6 +164,7 @@ func main() {
 	}
 
 	http.HandleFunc("GET /api/{role}/meta/", handleMetaQueries)
+	http.HandleFunc("GET /api/update", handleManualUpdate)
 	http.HandleFunc("GET /api/{champ}/counter/", handleCounterQueries)
 	fmt.Println(updaterFreq)
 	ticker := time.NewTicker(updaterFreq)
