@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,13 +15,13 @@ var championDataUrl string = "https://static.bigbrain.gg/assets/lol/riot_static/
 func GetChampionData() ChampDataResp {
 	resp, err := http.Get(championDataUrl)
 	if err != nil {
-		fmt.Println("Error with the champion meta data request: ", err)
+		log.Println("Error with the champion meta data request: ", err)
 		return ChampDataResp{}
 	}
 	defer resp.Body.Close()
 	var respData ChampDataResp
 	if err = json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		fmt.Println("Error with the reading of the response body: ", err)
+		log.Println("Error with the reading of the response body: ", err)
 		return ChampDataResp{}
 	}
 	return respData
@@ -33,7 +34,7 @@ func GetAllRankStatData() (map[string]RoleMap, error) {
 	for _, rank := range ranks {
 		rolemap, err := GetChampStatData(rank, champMetaData)
 		if err != nil {
-			fmt.Printf("Error for createeing champ stat data with rank: %s\n", rank)
+			log.Printf("Error for createeing champ stat data with rank: %s\n", rank)
 			return nil, err
 		}
 		res[rank] = rolemap
@@ -64,24 +65,24 @@ func GetChampStatData(rank string, champMetaData ChampDataResp) (RoleMap, error)
 	campStatDataURL := fmt.Sprintf("https://stats2.u.gg/lol/1.5/champion_ranking/world/%s/ranked_solo_5x5/%s/1.5.0.json", patch, rank)
 	resp, err := http.Get(campStatDataURL)
 	if err != nil {
-		fmt.Println("Error with the champion meta data request: ", err)
+		log.Println("Error with the champion meta data request: ", err)
 		return RoleMap{}, err
 	}
 	defer resp.Body.Close()
 	bytedata, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return RoleMap{}, err
 	}
 	var raw []json.RawMessage
 	err = json.Unmarshal(bytedata, &raw)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return RoleMap{}, err
 	}
 	roleMap, lastUpdated, err := convertChampStatDataIntoRoleChampMap(raw, champMetaData)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return RoleMap{}, err
 	}
 	return RoleMap{
@@ -104,19 +105,19 @@ func convertChampStatDataIntoRoleChampMap(raw []json.RawMessage, champMetaData C
 	var lastUpdated time.Time
 	err := json.Unmarshal(raw[2], &lastUpdated)
 	if err != nil {
-		fmt.Println("Baj volta a lastUpdated parsnál: ", err)
+		log.Println("Baj volta a lastUpdated parsnál: ", err)
 		return nil, time.Time{}, err
 	}
 	var totalMatches float64
 	err = json.Unmarshal(raw[3], &totalMatches)
 	if err != nil {
-		fmt.Println("Baj volta a totalMatches parsnál: ", err)
+		log.Println("Baj volta a totalMatches parsnál: ", err)
 		return nil, time.Time{}, err
 	}
 	var rawstruct map[string][][]interface{}
 	res := make(map[string][]Champ)
 	if err := json.Unmarshal(top, &rawstruct); err != nil {
-		fmt.Println("Baj volt a őrasenál: ", err)
+		log.Println("Baj volt a őrasenál: ", err)
 		return nil, time.Time{}, err
 	}
 	for role, champs := range rawstruct {
