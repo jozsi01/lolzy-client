@@ -132,7 +132,10 @@ func handleUpdater(ticker *time.Ticker, done chan bool) {
 			fmt.Println("Gorutin stops")
 			return
 		case <-ticker.C:
-			data.UpdateChampStatData(champdata)
+			updatedChampdata, err := data.UpdateChampStatData(champdata)
+			if err == nil {
+				champdata = updatedChampdata
+			}
 		}
 
 	}
@@ -148,7 +151,10 @@ func getEnv(envName, def string) string {
 }
 func handleManualUpdate(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Manually updating champdata")
-	data.UpdateChampStatData(champdata)
+	updatedChampdata, err := data.UpdateChampStatData(champdata)
+	if err == nil {
+		champdata = updatedChampdata
+	}
 	w.Write([]byte("Sucessfully updated"))
 }
 
